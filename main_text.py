@@ -1,6 +1,7 @@
 import os
 import subprocess
 import tkinter as tk
+import datetime 
 from tkinter import scrolledtext
 import speech_recognition as sr
 from groq import Groq
@@ -27,11 +28,14 @@ class ChatBotGUI:
         self.voice_button = tk.Button(root, text="🎤 Voice Input", command=self.voice_input, bg="#444444", fg="white", font=("Arial", 12))
         self.voice_button.pack(pady=5, padx=10, fill=tk.X)
 
+        # setting up the time zone 
+        self.timezone = datetime.datetime.now(datetime.timezone.utc).astimezone().tzname()
+
         self.client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
     def speak(self, text):
         """Convert text to speech and play it."""
-        voice = "en-US-AvaNeural"
+        voice = "en-US-AriaNeural"
         command = f'edge-tts --voice "{voice}" --text "{text}" --write-media "audio/output.mp3"'
         os.system(command)
         subprocess.run(["afplay", "audio/output.mp3"])  # Use afplay on macOS
@@ -53,6 +57,11 @@ class ChatBotGUI:
             self.chat_display.insert(tk.END, f"AI: {response}\n", "bot")
             self.speak(response)
             self.chat_display.yview(tk.END)
+        
+    def basic_message(self):
+        query = self.user_input.get().strip()
+        if "what is the time" or "tell me the time" in query:
+            print(self.timezone)
 
     def voice_input(self):
         """Capture voice and send as input."""
@@ -70,6 +79,7 @@ class ChatBotGUI:
         except Exception as e:
             self.chat_display.insert(tk.END, "Error: Could not understand voice input.\n", "error")
             self.chat_display.yview(tk.END)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
